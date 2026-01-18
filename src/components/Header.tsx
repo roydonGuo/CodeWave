@@ -1,0 +1,67 @@
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ArrowLeft, Volume2 } from 'lucide-react-native';
+
+interface HeaderProps {
+  title: string;
+  showBackButton?: boolean;
+  onBackPress?: () => void;
+  rightContent?: React.ReactNode;
+}
+
+export const Header: React.FC<HeaderProps> = ({
+  title,
+  showBackButton = false,
+  onBackPress,
+  rightContent,
+}) => {
+  return (
+    <View style={styles.container}>
+      <View style={styles.leftSection}>
+        {showBackButton && (
+          <TouchableOpacity
+            onPress={onBackPress}
+            style={styles.backButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <ArrowLeft size={24} color="#94a3b8" />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.title}>{title}</Text>
+      </View>
+      {rightContent && <View style={styles.rightSection}>{rightContent}</View>}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingTop: 32,
+    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#1e293b',
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+});
+
