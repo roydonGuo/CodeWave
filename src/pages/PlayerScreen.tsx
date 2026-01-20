@@ -13,6 +13,7 @@ import { ContentRenderer } from '../components/ContentRenderer';
 import { CodeModeSelector } from '../components/CodeModeSelector';
 import { ProgressBar } from '../components/ProgressBar';
 import { PlayerControls } from '../components/PlayerControls';
+import { ModeBackground } from '../components/ModeBackground';
 
 interface PlayerScreenProps {
   article: Article;
@@ -114,6 +115,7 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({
 
   return (
     <View style={[styles.container, getSceneStyles()]}>
+      <ModeBackground active={isPlaying} sceneMode={sceneMode} />
       {/* Top Bar */}
       <View style={styles.topBar}>
         <View style={styles.logoContainer}>
