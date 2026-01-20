@@ -1,14 +1,30 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import { Settings, Bell, Heart, History, HelpCircle, LogOut } from 'lucide-react-native';
+  Settings,
+  Bell,
+  Heart,
+  History,
+  HelpCircle,
+  LogOut,
+  ChevronRight,
+} from 'lucide-react-native';
 
-export const ProfileScreen: React.FC = () => {
+interface ProfileScreenProps {
+  isLoggedIn: boolean;
+  username: string | null;
+  email?: string | null;
+  onLoginPress: () => void;
+  onLogoutPress: () => void;
+}
+
+export const ProfileScreen: React.FC<ProfileScreenProps> = ({
+  isLoggedIn,
+  username,
+  email,
+  onLoginPress,
+  onLogoutPress,
+}) => {
   const menuItems = [
     {
       id: 'settings',
@@ -48,6 +64,11 @@ export const ProfileScreen: React.FC = () => {
     },
   ];
 
+  const displayName = useMemo(() => {
+    if (!isLoggedIn) return '点击登录';
+    return username || '用户';
+  }, [isLoggedIn, username]);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -61,23 +82,43 @@ export const ProfileScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* User Info Section */}
-        <View style={styles.userSection}>
+        <TouchableOpacity
+          style={styles.userSection}
+          activeOpacity={0.85}
+          onPress={() => {
+            if (!isLoggedIn) onLoginPress();
+          }}
+        >
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>U</Text>
+            <Text style={styles.avatarText}>
+              {(displayName.trim()[0] || 'U').toUpperCase()}
+            </Text>
           </View>
-          <Text style={styles.userName}>用户名</Text>
-          <Text style={styles.userEmail}>user@example.com</Text>
-        </View>
+          <View style={styles.userRow}>
+            <View style={styles.userCol}>
+              <Text style={styles.userName}>{displayName}</Text>
+              <Text style={styles.userEmail}>
+                {isLoggedIn ? email || '—' : '登录后同步你的收藏与历史'}
+              </Text>
+            </View>
+            {!isLoggedIn && <ChevronRight size={18} color="#64748b" />}
+          </View>
+        </TouchableOpacity>
 
         {/* Menu Items */}
         <View style={styles.menuSection}>
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isLogout = item.id === 'logout';
             return (
               <TouchableOpacity
                 key={item.id}
-                style={styles.menuItem}
+                style={[styles.menuItem, isLogout && !isLoggedIn && styles.menuItemDisabled]}
                 activeOpacity={0.7}
+                disabled={isLogout && !isLoggedIn}
+                onPress={() => {
+                  if (isLogout) onLogoutPress();
+                }}
               >
                 <View style={[styles.menuIcon, { backgroundColor: `${item.color}20` }]}>
                   <Icon size={20} color={item.color} />
@@ -126,6 +167,17 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     paddingHorizontal: 24,
   },
+  userRow: {
+    marginTop: 12,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  userCol: {
+    flex: 1,
+    alignItems: 'center',
+  },
   avatar: {
     width: 80,
     height: 80,
@@ -164,6 +216,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#1e293b',
+  },
+  menuItemDisabled: {
+    opacity: 0.45,
   },
   menuIcon: {
     width: 40,

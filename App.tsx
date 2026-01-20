@@ -12,15 +12,21 @@ import {
 import { PlayerScreen } from './src/pages/PlayerScreen';
 import { LibraryScreen } from './src/pages/LibraryScreen';
 import { ProfileScreen } from './src/pages/ProfileScreen';
+import { LoginScreen } from './src/pages/LoginScreen';
 import { BottomNavigation, TabType } from './src/components/BottomNavigation';
 import { MOCK_LIBRARY } from './src/data/mockData';
 import { Article } from './src/types';
+import { AuthProvider, useAuth } from './src/state/auth/AuthContext';
+
+type Route = 'main' | 'login';
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState<TabType>('player');
   const [currentArticle, setCurrentArticle] = useState<Article>(MOCK_LIBRARY[0]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [route, setRoute] = useState<Route>('main');
   const insets = useSafeAreaInsets();
+  const auth = useAuth();
 
   const handleArticleSelect = (article: Article) => {
     setCurrentArticle(article);
@@ -29,6 +35,16 @@ function AppContent() {
   };
 
   const renderContent = () => {
+    if (route === 'login') {
+      return (
+        <LoginScreen
+          onBack={() => {
+            setRoute('main');
+          }}
+        />
+      );
+    }
+
     switch (activeTab) {
       case 'library':
         return (
@@ -39,7 +55,15 @@ function AppContent() {
           />
         );
       case 'profile':
-        return <ProfileScreen />;
+        return (
+          <ProfileScreen
+            isLoggedIn={auth.isLoggedIn}
+            username={auth.user?.username ?? null}
+            email={auth.user?.email ?? null}
+            onLoginPress={() => setRoute('login')}
+            onLogoutPress={() => auth.logout()}
+          />
+        );
       case 'player':
       default:
         return (
@@ -56,9 +80,13 @@ function AppContent() {
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
       <View style={styles.container}>
         <View style={styles.content}>{renderContent()}</View>
-        <View style={[styles.navigation, { paddingBottom: Math.max(insets.bottom, 0) }]}>
-          <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-        </View>
+        {route === 'main' && (
+          <View
+            style={[styles.navigation, { paddingBottom: Math.max(insets.bottom, 0) }]}
+          >
+            <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          </View>
+        )}
       </View>
     </>
   );
@@ -67,7 +95,9 @@ function AppContent() {
 function App() {
   return (
     <SafeAreaProvider>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
