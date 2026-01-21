@@ -21,8 +21,11 @@ export const AppBackground: React.FC = () => {
             fx="50%"
             fy="100%"
           >
-            <Stop offset="40%" stopColor="rgb(0,0,0)" stopOpacity="1" />
-            <Stop offset="100%" stopColor="rgb(4, 4, 58)" stopOpacity="1" />
+            <Stop offset="20%" stopColor="rgb(7, 1, 41)" stopOpacity="1" />
+            <Stop offset="40%" stopColor="rgb(16, 5, 75)" stopOpacity="1" />
+            <Stop offset="60%" stopColor="rgb(15, 4, 71)" stopOpacity="1" />
+            <Stop offset="80%" stopColor="rgb(5, 0, 31)" stopOpacity="1" />
+            <Stop offset="100%" stopColor="rgb(0, 0, 0)" stopOpacity="1" />
           </RadialGradient>
         </Defs>
         <Rect x="0" y="0" width={width} height={height} fill="url(#appBgGradient)" />
@@ -30,5 +33,4 @@ export const AppBackground: React.FC = () => {
     </View>
   );
 };
-
 
