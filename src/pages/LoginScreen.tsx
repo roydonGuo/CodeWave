@@ -96,16 +96,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onBack }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   backBtn: {
     marginRight: 12,

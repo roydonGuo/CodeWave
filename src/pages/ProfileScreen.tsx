@@ -140,11 +140,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
+    flex: 1,
   },
   header: {
     paddingHorizontal: 16,
-    paddingVertical: 12, 
+    paddingVertical: 12,
   },
   headerTitle: {
     fontSize: 20,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
   },
   menuSection: {
-    paddingHorizontal: 16 
+    paddingHorizontal: 16
   },
   menuItem: {
     flexDirection: 'row',
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: 'rgba(48, 45, 70, 0.3)',
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#1e293b',
