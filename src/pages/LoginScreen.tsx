@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator 
 import { ArrowLeft, LogIn } from 'lucide-react-native';
 import { ApiError } from '../api/client';
 import { useAuth } from '../state/auth/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface LoginScreenProps {
   onBack: () => void;
@@ -10,6 +11,7 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onBack }) => {
   const { login } = useAuth();
+  const insets = useSafeAreaInsets();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -39,7 +41,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onBack }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 0) }]}>
         <TouchableOpacity onPress={onBack} style={styles.backBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <ArrowLeft size={24} color="#94a3b8" />
         </TouchableOpacity>

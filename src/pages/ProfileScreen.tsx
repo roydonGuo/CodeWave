@@ -9,6 +9,7 @@ import {
   LogOut,
   ChevronRight,
 } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ProfileScreenProps {
   isLoggedIn: boolean;
@@ -25,6 +26,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onLoginPress,
   onLogoutPress,
 }) => {
+  const insets = useSafeAreaInsets();
   const menuItems = [
     {
       id: 'settings',
@@ -72,7 +74,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 0) }]}>
         <Text style={styles.headerTitle}>我的</Text>
       </View>
 

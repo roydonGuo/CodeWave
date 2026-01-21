@@ -8,6 +8,7 @@ import { CodeModeSelector } from '../components/CodeModeSelector';
 import { ProgressBar } from '../components/ProgressBar';
 import { PlayerControls } from '../components/PlayerControls';
 import { ModeBackground } from '../components/ModeBackground';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface PlayerScreenProps {
   article: Article | null;
@@ -55,6 +56,7 @@ const formatCreateTime = (createTime: string): string => {
 };
 
 export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPress }) => {
+  const insets = useSafeAreaInsets();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -190,7 +192,7 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPr
     <View style={[styles.container]}>
       <ModeBackground active={isPlaying} sceneMode={sceneMode} />
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 0) }]}>
         <View style={styles.logoContainer}>
           <View style={styles.logo}>
             <Volume2 size={16} color="#ffffff" />
@@ -256,6 +258,7 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#020617', // 避免露出白底
   },
   topBar: {
     flexDirection: 'row',
