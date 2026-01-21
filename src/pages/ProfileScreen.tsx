@@ -140,15 +140,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#0f172a',
+    flex: 1, 
   },
   header: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    paddingVertical: 12, 
   },
   headerTitle: {
     fontSize: 20,

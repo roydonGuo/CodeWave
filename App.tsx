@@ -17,6 +17,7 @@ import { CreatePostScreen } from './src/pages/CreatePostScreen';
 import { BottomNavigation, TabType } from './src/components/BottomNavigation';
 import { Article } from './src/types';
 import { AuthProvider, useAuth } from './src/state/auth/AuthContext';
+import { AppBackground } from './src/components/AppBackground';
 
 type Route = 'main' | 'login' | 'createPost';
 
@@ -90,6 +91,7 @@ function AppContent() {
     <>
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
       <View style={styles.container}>
+        <AppBackground />
         <View style={styles.content}>{renderContent()}</View>
         {route === 'main' && (
           <View
@@ -116,7 +118,6 @@ function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
   },
   content: {
     flex: 1,

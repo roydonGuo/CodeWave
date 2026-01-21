@@ -270,8 +270,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#0f172a',
+    flex: 1, 
   },
   filterContainer: {
     flexDirection: 'row',

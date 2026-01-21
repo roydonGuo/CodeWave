@@ -149,14 +149,14 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPr
   };
 
   const getSceneStyles = () => {
-    switch (sceneMode) {
-      case 'driving':
-        return { backgroundColor: '#020617' };
-      case 'gym':
-        return { backgroundColor: '#020617' };
-      default:
-        return { backgroundColor: '#020617' };
-    }
+    // switch (sceneMode) {
+    //   case 'driving':
+    //     return { backgroundColor: '#020617' };
+    //   case 'gym':
+    //     return { backgroundColor: '#020617' };
+    //   default:
+    //     return { backgroundColor: '#020617' };
+    // }
   };
 
   // 未选择作品时的占位视图
@@ -186,7 +186,8 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPr
   const buttonSize = sceneMode === 'driving' ? 'large' : 'standard';
 
   return (
-    <View style={[styles.container, getSceneStyles()]}>
+    // <View style={[styles.container, getSceneStyles()]}>
+    <View style={[styles.container]}>
       <ModeBackground active={isPlaying} sceneMode={sceneMode} />
       {/* Top Bar */}
       <View style={styles.topBar}>

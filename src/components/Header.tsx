@@ -40,10 +40,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    paddingVertical: 12,  
   },
   leftSection: {
     flexDirection: 'row',
