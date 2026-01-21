@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Volume2 } from 'lucide-react-native';
 import { Article, SceneMode, CodeMode } from '../types';
 import { SceneSelector } from '../components/SceneSelector';
@@ -16,29 +10,75 @@ import { PlayerControls } from '../components/PlayerControls';
 import { ModeBackground } from '../components/ModeBackground';
 
 interface PlayerScreenProps {
-  article: Article;
+  article: Article | null;
   onLibraryPress: () => void;
 }
 
-export const PlayerScreen: React.FC<PlayerScreenProps> = ({
-  article,
-  onLibraryPress,
-}) => {
+// 格式化创建时间
+const formatCreateTime = (createTime: string): string => {
+  try {
+    // 解析时间字符串，格式: "2026-01-21 13:53:43"
+    // 将空格替换为 T，使其符合 ISO 格式
+    const isoString = createTime.replace(' ', 'T');
+    const date = new Date(isoString);
+    
+    // 检查日期是否有效
+    if (isNaN(date.getTime())) {
+      return createTime.split(' ')[0]; // 如果无效，返回日期部分
+    }
+    
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    
+    // 如果时间在未来或无效，返回日期
+    if (diff < 0) {
+      return createTime.split(' ')[0];
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor(diff / (1000 * 60));
+
+    if (days > 0) {
+      return `${days}天前`;
+    } else if (hours > 0) {
+      return `${hours}小时前`;
+    } else if (minutes > 0) {
+      return `${minutes}分钟前`;
+    } else {
+      return '刚刚';
+    }
+  } catch (error) {
+    // 如果解析失败，返回原始时间字符串的简化版本
+    return createTime.split(' ')[0]; // 返回日期部分
+  }
+};
+
+export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPress }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [sceneMode, setSceneMode] = useState<SceneMode>('standard');
   const [codeMode, setCodeMode] = useState<CodeMode>('summary');
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
+  const [isMuted, setIsMuted] = useState(false);
 
   // 播放进度模拟
   useEffect(() => {
+    if (!article) {
+      setIsPlaying(false);
+      setProgress(0);
+      setCurrentSegmentIndex(0);
+      return;
+    }
+
     // @ts-ignore
     let interval: NodeJS.Timeout | null = null;
 
     if (isPlaying) {
       interval = setInterval(() => {
         setProgress((prev) => {
+          if (!article) return 0;
           if (prev >= 100) {
             // 移动到下一个段落
             if (currentSegmentIndex < article.segments.length - 1) {
@@ -70,18 +110,26 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({
       if (interval) clearInterval(interval);
     };
   }, [
+    article,
     isPlaying,
     currentSegmentIndex,
     playbackSpeed,
     codeMode,
-    article.segments.length,
   ]);
+
+  // 切换作品时重置进度
+  useEffect(() => {
+    setIsPlaying(false);
+    setProgress(0);
+    setCurrentSegmentIndex(0);
+  }, [article?.id]);
 
   const handleSpeedChange = () => {
     setPlaybackSpeed((s) => (s === 1 ? 1.5 : s === 1.5 ? 2 : 1));
   };
 
   const handleSkipBack = () => {
+    if (!article) return;
     if (currentSegmentIndex > 0) {
       setCurrentSegmentIndex(currentSegmentIndex - 1);
       setProgress(0);
@@ -89,10 +137,15 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({
   };
 
   const handleSkipForward = () => {
+    if (!article) return;
     if (currentSegmentIndex < article.segments.length - 1) {
       setCurrentSegmentIndex(currentSegmentIndex + 1);
       setProgress(0);
     }
+  };
+
+  const handleToggleMute = () => {
+    setIsMuted((prev) => !prev);
   };
 
   const getSceneStyles = () => {
@@ -105,6 +158,25 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({
         return { backgroundColor: '#020617' };
     }
   };
+
+  // 未选择作品时的占位视图
+  if (!article) {
+    return (
+      <View style={[styles.container, { backgroundColor: '#020617' }]}>
+        <ModeBackground active={false} sceneMode={sceneMode} />
+        <View style={styles.emptyState}>
+          <View style={styles.emptyIcon}>
+            <Volume2 size={24} color="#818cf8" />
+          </View>
+          <Text style={styles.emptyTitle}>还没有选择作品</Text>
+          <Text style={styles.emptySubtitle}>前往知识库选择一篇作品开始播放</Text>
+          <TouchableOpacity style={styles.emptyButton} onPress={onLibraryPress} activeOpacity={0.85}>
+            <Text style={styles.emptyButtonText}>去选择作品</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   const currentSegment = article.segments[currentSegmentIndex] || {
     type: 'text',
@@ -145,7 +217,7 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({
             {article.title}
           </Text>
           <Text style={styles.meta}>
-            {article.author} • {article.duration}
+              {article.createTime ? formatCreateTime(article.createTime) : ''}
           </Text>
         </View>
 
@@ -155,10 +227,7 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({
         </View>
       </ScrollView>
 
-      {/* Code Mode Selector */}
-      <CodeModeSelector codeMode={codeMode} onModeChange={setCodeMode} />
-
-      {/* Player Controls */}
+      {/* Player Controls (overlay) */}
       <View style={styles.controlsContainer}>
         <ProgressBar
           currentSegment={currentSegmentIndex}
@@ -174,7 +243,8 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({
           onSkipBack={handleSkipBack}
           onSkipForward={handleSkipForward}
           onSpeedChange={handleSpeedChange}
-          onLibraryPress={onLibraryPress}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
           buttonSize={buttonSize}
         />
       </View>
@@ -191,9 +261,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: 32,
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    paddingVertical: 12, 
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
   },
@@ -211,7 +279,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#ffffff',
     letterSpacing: -0.5,
@@ -221,7 +289,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 16,
+    paddingBottom: 220, // 为底部控制区预留空间，避免被遮挡
   },
   articleInfo: {
     paddingHorizontal: 24,
@@ -238,7 +306,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#ffffff',
     textAlign: 'center',
@@ -258,10 +326,51 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   controlsContainer: {
-    backgroundColor: '#0f172a',
-    borderTopWidth: 1,
-    borderTopColor: '#1e293b',
-    paddingTop: 16,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
+    backgroundColor: 'transparent',  
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  emptyIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    color: '#e2e8f0',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  emptySubtitle: {
+    color: '#94a3b8',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptyButton: {
+    marginTop: 4,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#4f46e5',
+  },
+  emptyButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

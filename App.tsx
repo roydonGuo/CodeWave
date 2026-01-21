@@ -13,16 +13,16 @@ import { PlayerScreen } from './src/pages/PlayerScreen';
 import { LibraryScreen } from './src/pages/LibraryScreen';
 import { ProfileScreen } from './src/pages/ProfileScreen';
 import { LoginScreen } from './src/pages/LoginScreen';
+import { CreatePostScreen } from './src/pages/CreatePostScreen';
 import { BottomNavigation, TabType } from './src/components/BottomNavigation';
-import { MOCK_LIBRARY } from './src/data/mockData';
 import { Article } from './src/types';
 import { AuthProvider, useAuth } from './src/state/auth/AuthContext';
 
-type Route = 'main' | 'login';
+type Route = 'main' | 'login' | 'createPost';
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState<TabType>('player');
-  const [currentArticle, setCurrentArticle] = useState<Article>(MOCK_LIBRARY[0]);
+  const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [route, setRoute] = useState<Route>('main');
   const insets = useSafeAreaInsets();
@@ -45,6 +45,16 @@ function AppContent() {
       );
     }
 
+    if (route === 'createPost') {
+      return (
+        <CreatePostScreen
+          onBack={() => {
+            setRoute('main');
+          }}
+        />
+      );
+    }
+
     switch (activeTab) {
       case 'library':
         return (
@@ -52,6 +62,7 @@ function AppContent() {
             currentArticle={currentArticle}
             isPlaying={isPlaying}
             onArticleSelect={handleArticleSelect}
+            onCreatePostPress={() => setRoute('createPost')}
           />
         );
       case 'profile':

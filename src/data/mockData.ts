@@ -21,6 +21,7 @@ export interface Article {
   duration: string;
   category: string;
   segments: Segment[];
+  createTime?: string; // 创建时间（可选，用于从后端获取的数据）
 }
 
 // Mock 数据

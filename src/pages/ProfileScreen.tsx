@@ -144,15 +144,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a',
   },
   header: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    paddingTop: 32,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: 'rgba(15, 23, 42, 0.9)',
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#ffffff',
   },
@@ -203,15 +202,14 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
   },
   menuSection: {
-    paddingHorizontal: 24,
-    marginTop: 8,
+    paddingHorizontal: 16 
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    backgroundColor: 'rgba(48, 45, 70, 0.3)',
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,

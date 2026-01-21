@@ -1,26 +1,52 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, Text, RefreshControl, TouchableOpacity } from 'react-native';
-import { Article } from '../types';
-import { MOCK_LIBRARY } from '../data/mockData';
+import { Article, TextSegment } from '../types';
 import { Header } from '../components/Header';
 import { CategoryFilter, Category } from '../components/CategoryFilter';
 import { ArticleCard } from '../components/ArticleCard';
 import { AddCategoryModal } from '../components/AddCategoryModal';
 import { getCategoryList, addCategory } from '../api/category';
+import { getPostList, Post } from '../api/post';
 import { useAuth } from '../state/auth/AuthContext';
+import { Plus } from 'lucide-react-native';
 
 interface LibraryScreenProps {
   currentArticle: Article | null;
   isPlaying: boolean;
   onArticleSelect: (article: Article) => void;
+  onCreatePostPress: () => void;
 }
 
 const PAGE_SIZE = 10; // 每页加载的文章数量
+
+// 将 Post 转换为 Article 的适配器函数
+const convertPostToArticle = (post: Post, categoryName: string): Article => {
+  // 将 HTML content 转换为简单的文本段（后续可以完善 MD 解析）
+  const textContent = post.content.replace(/<[^>]*>/g, '').trim();
+  const segments: TextSegment[] = textContent
+    ? [{ type: 'text', content: textContent }]
+    : [{ type: 'text', content: '暂无内容' }];
+
+  // 计算预估时长（简单估算：每 200 字符约 1 分钟）
+  const estimatedMinutes = Math.max(1, Math.ceil(textContent.length / 200));
+  const duration = `${estimatedMinutes}:00`;
+
+  return {
+    id: post.id,
+    title: post.title,
+    author: '作者', // 暂时使用占位值，后续可以从 userId 获取
+    duration,
+    category: categoryName,
+    segments,
+    createTime: post.createTime, // 保留创建时间
+  };
+};
 
 export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   currentArticle,
   isPlaying,
   onArticleSelect,
+  onCreatePostPress,
 }) => {
   const { token } = useAuth();
   const [categories, setCategories] = useState<Category[]>([{ id: null, name: '全部' }]);
@@ -31,6 +57,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPosts, setTotalPosts] = useState(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 加载分类列表
@@ -56,19 +84,55 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
     loadCategories();
   }, [loadCategories]);
 
-  // 使用 useMemo 稳定 filteredArticles 的引用
-  const filteredArticles = useMemo(() => {
-    if (selectedCategoryId === null) {
-      // "全部"分类，显示所有文章
-      return MOCK_LIBRARY;
+  // 加载作品列表
+  const loadPosts = useCallback(
+    async (pageNum: number, categoryId: number | null, append: boolean = false) => {
+      try {
+        setIsLoading(true);
+        const result = await getPostList(
+          {
+            pageNum,
+            pageSize: PAGE_SIZE,
+            categoryId: categoryId || undefined,
+          },
+          token
+        );
+
+        // 将 Post 转换为 Article
+        const articles = result.rows.map((post) => {
+          const category = categories.find((cat) => cat.id === post.categoryId);
+          const categoryName = category?.name || '未分类';
+          return convertPostToArticle(post, categoryName);
+        });
+
+        setTotalPosts(result.total);
+        
+        if (append) {
+          setDisplayedArticles((prev) => [...prev, ...articles]);
+        } else {
+          setDisplayedArticles(articles);
+        }
+
+        const currentTotal = append ? displayedArticles.length + articles.length : articles.length;
+        setHasMore(currentTotal < result.total);
+      } catch (error) {
+        console.error('加载作品列表失败:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [token, categories]
+  );
+
+  // 加载作品列表：分类加载完成后初始化，分类改变时刷新
+  useEffect(() => {
+    if (!loadingCategories && categories.length > 0) {
+      setCurrentPage(1);
+      setDisplayedArticles([]);
+      setHasMore(true);
+      loadPosts(1, selectedCategoryId, false);
     }
-    // 根据分类名称过滤（因为 Article 的 category 是 string）
-    // 后续如果 Article 改为使用 categoryId，这里需要相应调整
-    return MOCK_LIBRARY.filter((article) => {
-      const category = categories.find((cat) => cat.id === selectedCategoryId);
-      return category && article.category === category.name;
-    });
-  }, [selectedCategoryId, categories]);
+  }, [selectedCategoryId, loadingCategories, categories.length, loadPosts]);
 
   // 处理添加分类
   const handleAddCategory = useCallback(
@@ -92,97 +156,23 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   // 加载更多文章
   const loadMoreArticles = useCallback(() => {
     if (isLoading || !hasMore) return;
-
-    setIsLoading(true);
-    
-    // 清除之前的定时器
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    
-    // 模拟网络延迟
-    timeoutRef.current = setTimeout(() => {
-      setDisplayedArticles((prev) => {
-        const startIndex = prev.length;
-        const endIndex = startIndex + PAGE_SIZE;
-        const newArticles = filteredArticles.slice(startIndex, endIndex);
-
-        if (newArticles.length > 0) {
-          setHasMore(endIndex < filteredArticles.length);
-          return [...prev, ...newArticles];
-        } else {
-          setHasMore(false);
-          return prev;
-        }
-      });
-      
-      setIsLoading(false);
-    }, 500);
-  }, [filteredArticles, isLoading, hasMore]);
-
-  // 分类改变时重置分页
-  useEffect(() => {
-    // 清除之前的定时器
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    
-    // 重置状态
-    setIsLoading(false);
-    setDisplayedArticles([]);
-    setHasMore(true);
-    
-    // 立即加载第一页
-    const timer = setTimeout(() => {
-      const firstPageArticles = filteredArticles.slice(0, PAGE_SIZE);
-      if (firstPageArticles.length > 0) {
-        setDisplayedArticles(firstPageArticles);
-        setHasMore(filteredArticles.length > PAGE_SIZE);
-      } else {
-        setHasMore(false);
-      }
-    }, 100);
-    
-    timeoutRef.current = timer;
-    
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-  }, [selectedCategoryId, filteredArticles]);
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    loadPosts(nextPage, selectedCategoryId, true);
+  }, [isLoading, hasMore, currentPage, selectedCategoryId, loadPosts]);
 
   // 下拉刷新处理
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     if (refreshing) return;
     
     setRefreshing(true);
-    
-    // 清除之前的定时器
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    
-    // 重置状态
-    setIsLoading(false);
+    setCurrentPage(1);
     setDisplayedArticles([]);
     setHasMore(true);
     
-    // 模拟网络延迟后重新加载第一页
-    timeoutRef.current = setTimeout(() => {
-      const firstPageArticles = filteredArticles.slice(0, PAGE_SIZE);
-      if (firstPageArticles.length > 0) {
-        setDisplayedArticles(firstPageArticles);
-        setHasMore(filteredArticles.length > PAGE_SIZE);
-      } else {
-        setHasMore(false);
-      }
-      setRefreshing(false);
-    }, 800); // 刷新延迟稍长，让用户看到刷新效果
-  }, [refreshing, filteredArticles]);
+    await loadPosts(1, selectedCategoryId, false);
+    setRefreshing(false);
+  }, [refreshing, selectedCategoryId, loadPosts]);
 
   // 滚动事件处理
   const handleScroll = useCallback(
@@ -212,7 +202,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
           style={styles.addButton}
           onPress={() => setShowAddModal(true)}
         >
-          <Text style={styles.addButtonText}>+ 新增</Text>
+          <Text style={styles.addButtonText}><Plus size={14} color="#ffffff" /></Text>
         </TouchableOpacity>
       </View>
       <ScrollView
@@ -265,6 +255,15 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
         onClose={() => setShowAddModal(false)}
         onConfirm={handleAddCategory}
       />
+      
+      {/* 创建作品浮动按钮 */}
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={onCreatePostPress}
+        activeOpacity={0.8}
+      >
+        <Plus size={24} color="#ffffff" />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -281,7 +280,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 16,
     backgroundColor: '#4f46e5',
     marginRight: 16,
@@ -290,7 +289,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   scrollView: {
     flex: 1, // 填充剩余高度
@@ -317,6 +316,25 @@ const styles = StyleSheet.create({
   endText: {
     color: '#64748b',
     fontSize: 12,
+  },
+  floatingButton: {
+    position: 'absolute',
+    right: 20,
+    bottom: 100,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#4f46e5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
   },
 });
 

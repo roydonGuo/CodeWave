@@ -3,6 +3,46 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PlayCircle, Volume2, Clock, User } from 'lucide-react-native';
 import { Article } from '../types';
 
+// 格式化创建时间
+const formatCreateTime = (createTime: string): string => {
+  try {
+    // 解析时间字符串，格式: "2026-01-21 13:53:43"
+    // 将空格替换为 T，使其符合 ISO 格式
+    const isoString = createTime.replace(' ', 'T');
+    const date = new Date(isoString);
+    
+    // 检查日期是否有效
+    if (isNaN(date.getTime())) {
+      return createTime.split(' ')[0]; // 如果无效，返回日期部分
+    }
+    
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    
+    // 如果时间在未来或无效，返回日期
+    if (diff < 0) {
+      return createTime.split(' ')[0];
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor(diff / (1000 * 60));
+
+    if (days > 0) {
+      return `${days}天前`;
+    } else if (hours > 0) {
+      return `${hours}小时前`;
+    } else if (minutes > 0) {
+      return `${minutes}分钟前`;
+    } else {
+      return '刚刚';
+    }
+  } catch (error) {
+    // 如果解析失败，返回原始时间字符串的简化版本
+    return createTime.split(' ')[0]; // 返回日期部分
+  }
+};
+
 interface ArticleCardProps {
   article: Article;
   isCurrent?: boolean;
@@ -41,14 +81,17 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           {article.title}
         </Text>
         <View style={styles.meta}>
-          <View style={styles.metaItem}>
-            <User size={10} color="#64748b" />
-            <Text style={styles.metaText}>{article.author}</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Clock size={10} color="#64748b" />
-            <Text style={styles.metaText}>{article.duration}</Text>
-          </View>
+          {article.createTime ? (
+            <View style={styles.metaItem}>
+              <Clock size={10} color="#64748b" />
+              <Text style={styles.metaText}>{formatCreateTime(article.createTime)}</Text>
+            </View>
+          ) : (
+            <View style={styles.metaItem}>
+              <Clock size={10} color="#64748b" />
+              <Text style={styles.metaText}>{article.duration}</Text>
+            </View>
+          )}
         </View>
       </View>
       <View

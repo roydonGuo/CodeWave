@@ -1,12 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import {
-  Play,
-  Pause,
-  SkipForward,
-  SkipBack,
-  Layers,
-} from 'lucide-react-native';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX } from 'lucide-react-native';
 
 interface PlayerControlsProps {
   isPlaying: boolean;
@@ -15,7 +9,8 @@ interface PlayerControlsProps {
   onSkipBack: () => void;
   onSkipForward: () => void;
   onSpeedChange: () => void;
-  onLibraryPress: () => void;
+  isMuted: boolean;
+  onToggleMute: () => void;
   buttonSize?: 'standard' | 'large';
 }
 
@@ -26,10 +21,11 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
   onSkipBack,
   onSkipForward,
   onSpeedChange,
-  onLibraryPress,
+  isMuted,
+  onToggleMute,
   buttonSize = 'standard',
 }) => {
-  const mainButtonSize = buttonSize === 'large' ? 96 : 88;
+  const mainButtonSize = buttonSize === 'large' ? 88 : 78;
 
   return (
     <View style={styles.container}>
@@ -49,7 +45,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             onPress={onSkipBack}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <SkipBack size={32} color="#94a3b8" />
+            <SkipBack size={28} color="#94a3b8" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -61,13 +57,13 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
           >
             {isPlaying ? (
               <Pause
-                size={buttonSize === 'large' ? 40 : 32}
+                size={buttonSize === 'large' ? 38 : 30}
                 color="#0f172a"
                 fill="#0f172a"
               />
             ) : (
               <Play
-                size={buttonSize === 'large' ? 40 : 32}
+                size={buttonSize === 'large' ? 38 : 30}
                 color="#0f172a"
                 fill="#0f172a"
               />
@@ -78,17 +74,21 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             onPress={onSkipForward}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <SkipForward size={32} color="#94a3b8" />
+            <SkipForward size={28} color="#94a3b8" />
           </TouchableOpacity>
         </View>
 
-        {/* Library Button */}
+        {/* Mute Toggle */}
         <TouchableOpacity
-          style={styles.libraryButton}
-          onPress={onLibraryPress}
+          style={styles.muteButton}
+          onPress={onToggleMute}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Layers size={24} color="#94a3b8" />
+          {isMuted ? (
+            <VolumeX size={24} color="#d5393e" />
+          ) : (
+            <Volume2 size={24} color="#94a3b8" />
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -97,11 +97,8 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    backgroundColor: '#0f172a',
-    borderTopWidth: 1,
-    borderTopColor: '#1e293b',
+    paddingHorizontal: 16,
+    paddingVertical: 12,  
   },
   controlsRow: {
     flexDirection: 'row',
@@ -138,7 +135,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  libraryButton: {
+  muteButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',

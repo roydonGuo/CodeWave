@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   button: {
-    padding: 8,
+    padding: 7,
     borderRadius: 16,
   },
   buttonActive: {
