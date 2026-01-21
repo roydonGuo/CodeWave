@@ -32,7 +32,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
             activeOpacity={0.7}
           >
             <Icon
-              size={24}
+              size={20}
               color={isActive ? '#818cf8' : '#64748b'}
               fill={isActive ? '#818cf8' : 'transparent'}
             />
@@ -48,10 +48,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 6,
     paddingHorizontal: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#1e293b',
   },
   tab: {
     flex: 1,

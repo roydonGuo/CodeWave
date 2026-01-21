@@ -3,9 +3,10 @@ import { SceneMode } from '../types';
 import { ParticleBackground } from './ParticleBackground';
 import { DrivingStreakBackground } from './DrivingStreakBackground';
 import { GymPulseBackground } from './GymPulseBackground';
+import { StandardShaderBackground } from './StandardShaderBackground';
 
 type Intensity = 'low' | 'medium' | 'high';
-type BackgroundVariant = 'particles' | 'drivingStreaks' | 'gymPulse';
+type BackgroundVariant = 'particles' | 'drivingStreaks' | 'gymPulse' | 'standardShader';
 
 interface ModeBackgroundConfig {
   variant: BackgroundVariant;
@@ -15,8 +16,8 @@ interface ModeBackgroundConfig {
 // 所有场景模式背景配置集中在这里，后续扩展只改这个对象即可
 const MODE_BACKGROUND_CONFIG: Record<SceneMode, ModeBackgroundConfig> = {
   standard: {
-    // 轻量柔和的粒子背景，默认聆听模式
-    variant: 'particles',
+    // 标准模式：使用 shader 风格的动效背景
+    variant: 'standardShader',
     intensity: 'low',
   },
   gym: {
@@ -59,6 +60,8 @@ export const ModeBackground: React.FC<ModeBackgroundProps> = ({ active, sceneMod
       return <DrivingStreakBackground active intensity={config.intensity} />;
     case 'gymPulse':
       return <GymPulseBackground active intensity={config.intensity} />;
+    case 'standardShader':
+      return <StandardShaderBackground active intensity={config.intensity} />;
     case 'particles':
     default:
       return <ParticleBackground active intensity={config.intensity} />;

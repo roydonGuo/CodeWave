@@ -1,15 +1,20 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 
+export interface Category {
+  id: number | null;
+  name: string;
+}
+
 interface CategoryFilterProps {
-  categories: string[];
-  selectedCategory: string;
-  onSelectCategory: (category: string) => void;
+  categories: Category[];
+  selectedCategoryId: number | null;
+  onSelectCategory: (categoryId: number | null) => void;
 }
 
 export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   categories,
-  selectedCategory,
+  selectedCategoryId,
   onSelectCategory,
 }) => {
   return (
@@ -19,22 +24,22 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
-      {categories.map((category, index) => (
+      {categories.map((category) => (
         <TouchableOpacity
-          key={category}
+          key={category.id ?? 'all'}
           style={[
             styles.tag,
-            selectedCategory === category && styles.tagActive,
+            selectedCategoryId === category.id && styles.tagActive,
           ]}
-          onPress={() => onSelectCategory(category)}
+          onPress={() => onSelectCategory(category.id)}
         >
           <Text
             style={[
               styles.tagText,
-              selectedCategory === category && styles.tagTextActive,
+              selectedCategoryId === category.id && styles.tagTextActive,
             ]}
           >
-            {category}
+            {category.name}
           </Text>
         </TouchableOpacity>
       ))}
@@ -44,17 +49,17 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    // 高度自适应，根据内容自动调整
+    flex: 1,
   },
   contentContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 8,
     alignItems: 'center',
   },
   tag: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 16,
     backgroundColor: '#1e293b',
     borderWidth: 1, 
@@ -66,7 +71,7 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '400',
     color: '#94a3b8',
   },
   tagTextActive: {

@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, Text, RefreshControl } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, Text, RefreshControl, TouchableOpacity } from 'react-native';
 import { Article } from '../types';
 import { MOCK_LIBRARY } from '../data/mockData';
 import { Header } from '../components/Header';
-import { CategoryFilter } from '../components/CategoryFilter';
+import { CategoryFilter, Category } from '../components/CategoryFilter';
 import { ArticleCard } from '../components/ArticleCard';
+import { AddCategoryModal } from '../components/AddCategoryModal';
+import { getCategoryList, addCategory } from '../api/category';
+import { useAuth } from '../state/auth/AuthContext';
 
 interface LibraryScreenProps {
   currentArticle: Article | null;
@@ -19,21 +22,72 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   isPlaying,
   onArticleSelect,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState('全部');
+  const { token } = useAuth();
+  const [categories, setCategories] = useState<Category[]>([{ id: null, name: '全部' }]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [displayedArticles, setDisplayedArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const categories = ['全部', 'Frontend', 'System', 'Architecture', 'DevOps', 'AI', 'Mysql', 'App'];
+  // 加载分类列表
+  const loadCategories = useCallback(async (): Promise<Category[]> => {
+    try {
+      setLoadingCategories(true);
+      const categoryList = await getCategoryList(token);
+      // 在首节点添加"全部"分类
+      setCategories([{ id: null, name: '全部' }, ...categoryList]);
+      return categoryList;
+    } catch (error) {
+      console.error('加载分类列表失败:', error);
+      // 如果加载失败，至少保留"全部"选项
+      setCategories([{ id: null, name: '全部' }]);
+      return [];
+    } finally {
+      setLoadingCategories(false);
+    }
+  }, [token]);
+
+  // 初始化加载分类
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
 
   // 使用 useMemo 稳定 filteredArticles 的引用
   const filteredArticles = useMemo(() => {
-    return selectedCategory === '全部'
-      ? MOCK_LIBRARY
-      : MOCK_LIBRARY.filter((article) => article.category === selectedCategory);
-  }, [selectedCategory]);
+    if (selectedCategoryId === null) {
+      // "全部"分类，显示所有文章
+      return MOCK_LIBRARY;
+    }
+    // 根据分类名称过滤（因为 Article 的 category 是 string）
+    // 后续如果 Article 改为使用 categoryId，这里需要相应调整
+    return MOCK_LIBRARY.filter((article) => {
+      const category = categories.find((cat) => cat.id === selectedCategoryId);
+      return category && article.category === category.name;
+    });
+  }, [selectedCategoryId, categories]);
+
+  // 处理添加分类
+  const handleAddCategory = useCallback(
+    async (name: string) => {
+      // 调用添加分类接口，只有成功（code === 200）才会继续执行
+      await addCategory({ name }, token);
+      
+      // 添加成功后，重新获取分类列表以获取最新数据
+      // loadCategories 会更新 categories 状态并返回分类列表
+      const categoryList = await loadCategories();
+      
+      // 由于接口响应中没有返回分类数据，需要通过刷新后的列表来查找新添加的分类
+      // const newCategory = categoryList.find((cat) => cat.name === name);
+      // if (newCategory) {
+      //   setSelectedCategoryId(newCategory.id);
+      // }
+    },
+    [token, loadCategories]
+  );
 
   // 加载更多文章
   const loadMoreArticles = useCallback(() => {
@@ -98,7 +152,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
         timeoutRef.current = null;
       }
     };
-  }, [selectedCategory, filteredArticles]);
+  }, [selectedCategoryId, filteredArticles]);
 
   // 下拉刷新处理
   const onRefresh = useCallback(() => {
@@ -151,9 +205,15 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
       <View style={styles.filterContainer}>
         <CategoryFilter
           categories={categories}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
+          selectedCategoryId={selectedCategoryId}
+          onSelectCategory={setSelectedCategoryId}
         />
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setShowAddModal(true)}
+        >
+          <Text style={styles.addButtonText}>+ 新增</Text>
+        </TouchableOpacity>
       </View>
       <ScrollView
         style={styles.scrollView}
@@ -199,6 +259,12 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
           </View>
         )}
       </ScrollView>
+      
+      <AddCategoryModal
+        visible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onConfirm={handleAddCategory}
+      />
     </View>
   );
 };
@@ -209,13 +275,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a',
   },
   filterContainer: {
-    // 高度自适应，根据内容自动调整
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  addButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+    backgroundColor: '#4f46e5',
+    marginRight: 16,
+    alignSelf: 'center',
+  },
+  addButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '500',
   },
   scrollView: {
     flex: 1, // 填充剩余高度
   },
   scrollContent: {
-    padding: 16,
+    paddingHorizontal: 16,
     paddingBottom: 48,
   },
   loadingContainer: {

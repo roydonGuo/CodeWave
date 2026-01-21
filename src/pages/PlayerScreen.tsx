@@ -98,9 +98,9 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({
   const getSceneStyles = () => {
     switch (sceneMode) {
       case 'driving':
-        return { backgroundColor: '#0f172a' };
+        return { backgroundColor: '#020617' };
       case 'gym':
-        return { backgroundColor: '#0f172a' };
+        return { backgroundColor: '#020617' };
       default:
         return { backgroundColor: '#020617' };
     }
