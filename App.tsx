@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navigation: {
-    backgroundColor: '#0f172a',
+    backgroundColor: 'rgba(2, 0, 12, 0.56)',
   },
 });
 
