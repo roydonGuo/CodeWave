@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as AuthApi from '../../api/auth';
 import { clearAuthStorage, loadAuthFromStorage, saveAuthToStorage } from './storage';
+import { setAuthRequiredHandler } from '../../api/client';
 
 export interface AuthUser {
   id: string | number;
@@ -15,6 +16,9 @@ interface AuthState {
   isLoggedIn: boolean;
   login: (req: AuthApi.LoginRequest) => Promise<void>;
   logout: () => void;
+  showLoginModal: () => void;
+  hideLoginModal: () => void;
+  isLoginModalVisible: boolean;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -23,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
 
   // 启动时从本地恢复登录态（持久化）
   useEffect(() => {
@@ -69,6 +74,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     void clearAuthStorage();
   }, []);
 
+  const showLoginModal = useCallback(() => {
+    setIsLoginModalVisible(true);
+  }, []);
+
+  const hideLoginModal = useCallback(() => {
+    setIsLoginModalVisible(false);
+  }, []);
+
+  // 注册全局回调：当请求返回 401/403 时自动弹出登录弹窗
+  useEffect(() => {
+    setAuthRequiredHandler(showLoginModal);
+    return () => {
+      setAuthRequiredHandler(null);
+    };
+  }, [showLoginModal]);
+
   const value = useMemo<AuthState>(
     () => ({
       token,
@@ -76,8 +97,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isLoggedIn: !!token && !!user,
       login,
       logout,
+      showLoginModal,
+      hideLoginModal,
+      isLoginModalVisible,
     }),
-    [token, user, login, logout]
+    [token, user, login, logout, showLoginModal, hideLoginModal, isLoginModalVisible]
   );
 
   // 未完成持久化恢复前，先不渲染 children，避免闪烁/误判登录态
