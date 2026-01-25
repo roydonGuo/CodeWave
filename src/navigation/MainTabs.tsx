@@ -7,6 +7,7 @@ import { ProfileScreen } from '../pages/ProfileScreen';
 import { BottomNavigation, TabType } from '../components/BottomNavigation';
 import { Article } from '../types';
 import { useAuth } from '../state/auth/AuthContext';
+import { useTheme } from '../state/theme/ThemeContext';
 import { AppBackground } from '../components/AppBackground';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './AppNavigator';
@@ -20,6 +21,7 @@ export const MainTabs: React.FC<Props> = ({ navigation }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const insets = useSafeAreaInsets();
   const auth = useAuth();
+  const { colors, resolvedMode } = useTheme();
 
   const handleArticleSelect = (article: Article) => {
     setCurrentArticle(article);
@@ -80,12 +82,22 @@ export const MainTabs: React.FC<Props> = ({ navigation }) => {
 
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="#020617" />
-      <View style={styles.container}>
+      <StatusBar
+        barStyle={resolvedMode === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.background}
+      />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <AppBackground />
         <View style={styles.content}>{mainTabNodes}</View>
         <View
-          style={[styles.navigation, { paddingBottom: Math.max(insets.bottom, 0) }]}
+          style={[
+            styles.navigation,
+            {
+              paddingBottom: Math.max(insets.bottom, 0),
+              backgroundColor: colors.surface,
+              borderTopColor: colors.surfaceBorder,
+            },
+          ]}
         >
           <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
         </View>
@@ -97,13 +109,12 @@ export const MainTabs: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617', // 防止底层露白
   },
   content: {
     flex: 1,
   },
   navigation: {
-    backgroundColor: 'rgba(2, 0, 12, 0.6)',
+    borderTopWidth: 1,
   },
   tabPage: {
     flex: 1,

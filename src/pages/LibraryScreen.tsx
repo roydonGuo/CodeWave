@@ -8,6 +8,7 @@ import { AddCategoryModal } from '../components/AddCategoryModal';
 import { getCategoryList, addCategory } from '../api/category';
 import { getPostList, Post } from '../api/post';
 import { useAuth } from '../state/auth/AuthContext';
+import { useTheme } from '../state/theme/ThemeContext';
 import { Plus } from 'lucide-react-native';
 
 interface LibraryScreenProps {
@@ -49,6 +50,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   onCreatePostPress,
 }) => {
   const { token } = useAuth();
+  const { colors } = useTheme();
   const [categories, setCategories] = useState<Category[]>([{ id: null, name: '全部' }]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [displayedArticles, setDisplayedArticles] = useState<Article[]>([]);
@@ -70,7 +72,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
       setCategories([{ id: null, name: '全部' }, ...categoryList]);
       return categoryList;
     } catch (error) {
-      console.error('加载分类列表失败:', error);
+      console.log('加载分类列表失败:', error);
       // 如果加载失败，至少保留"全部"选项
       setCategories([{ id: null, name: '全部' }]);
       return [];
@@ -106,7 +108,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
         });
 
         setTotalPosts(result.total);
-        
+
         if (append) {
           setDisplayedArticles((prev) => [...prev, ...articles]);
         } else {
@@ -116,7 +118,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
         const currentTotal = append ? displayedArticles.length + articles.length : articles.length;
         setHasMore(currentTotal < result.total);
       } catch (error) {
-        console.error('加载作品列表失败:', error);
+        console.log('加载作品列表失败:', error);
       } finally {
         setIsLoading(false);
       }
@@ -139,11 +141,11 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
     async (name: string) => {
       // 调用添加分类接口，只有成功（code === 200）才会继续执行
       await addCategory({ name }, token);
-      
+
       // 添加成功后，重新获取分类列表以获取最新数据
       // loadCategories 会更新 categories 状态并返回分类列表
       const categoryList = await loadCategories();
-      
+
       // 由于接口响应中没有返回分类数据，需要通过刷新后的列表来查找新添加的分类
       // const newCategory = categoryList.find((cat) => cat.name === name);
       // if (newCategory) {
@@ -164,12 +166,12 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   // 下拉刷新处理
   const onRefresh = useCallback(async () => {
     if (refreshing) return;
-    
+
     setRefreshing(true);
     setCurrentPage(1);
     setDisplayedArticles([]);
     setHasMore(true);
-    
+
     await loadPosts(1, selectedCategoryId, false);
     setRefreshing(false);
   }, [refreshing, selectedCategoryId, loadPosts]);
@@ -190,7 +192,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="知识库" />
       <View style={styles.filterContainer}>
         <CategoryFilter
@@ -199,10 +201,10 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
           onSelectCategory={setSelectedCategoryId}
         />
         <TouchableOpacity
-          style={styles.addButton}
+          style={[styles.addButton, { backgroundColor: colors.accent }]}
           onPress={() => setShowAddModal(true)}
         >
-          <Text style={styles.addButtonText}><Plus size={14} color="#ffffff" /></Text>
+          <Plus size={14} color={colors.text} />
         </TouchableOpacity>
       </View>
       <ScrollView
@@ -215,9 +217,9 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#818cf8"
-            colors={['#818cf8']}
-            progressBackgroundColor="#1e293b"
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+            progressBackgroundColor={colors.surface}
           />
         }
       >
@@ -233,36 +235,36 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
             />
           );
         })}
-        
+
         {/* 加载指示器 */}
         {isLoading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#818cf8" />
-            <Text style={styles.loadingText}>加载中...</Text>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>加载中...</Text>
           </View>
         )}
-        
+
         {/* 没有更多数据提示 */}
         {!hasMore && displayedArticles.length > 0 && (
           <View style={styles.endContainer}>
-            <Text style={styles.endText}>没有更多内容了</Text>
+            <Text style={[styles.endText, { color: colors.textTertiary }]}>没有更多内容了</Text>
           </View>
         )}
       </ScrollView>
-      
+
       <AddCategoryModal
         visible={showAddModal}
         onClose={() => setShowAddModal(false)}
         onConfirm={handleAddCategory}
       />
-      
+
       {/* 创建作品浮动按钮 */}
       <TouchableOpacity
-        style={styles.floatingButton}
+        style={[styles.floatingButton, { backgroundColor: colors.accent }]}
         onPress={onCreatePostPress}
         activeOpacity={0.8}
       >
-        <Plus size={24} color="#ffffff" />
+        <Plus size={24} color={colors.text} />
       </TouchableOpacity>
     </View>
   );
@@ -270,7 +272,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
+    flex: 1,
   },
   filterContainer: {
     flexDirection: 'row',
@@ -281,12 +283,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#4f46e5',
     marginRight: 16,
     alignSelf: 'center',
   },
   addButtonText: {
-    color: '#ffffff',
     fontSize: 12,
     fontWeight: '400',
   },
@@ -305,7 +305,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   loadingText: {
-    color: '#94a3b8',
     fontSize: 14,
   },
   endContainer: {
@@ -313,7 +312,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   endText: {
-    color: '#64748b',
     fontSize: 12,
   },
   floatingButton: {
@@ -323,7 +321,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4f46e5',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 8,

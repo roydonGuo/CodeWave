@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider } from './src/state/theme/ThemeContext';
 import { AuthProvider, useAuth } from './src/state/auth/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { ToastManager, showToast } from './src/components/ToastManager';
@@ -41,9 +42,11 @@ function AppContent() {
 function App() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

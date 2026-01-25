@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { ArrowLeft, Volume2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../state/theme/ThemeContext';
 
 interface HeaderProps {
   title: string;
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   rightContent,
 }) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 0) }]}>
       <View style={styles.leftSection}>
@@ -26,10 +28,10 @@ export const Header: React.FC<HeaderProps> = ({
             style={styles.backButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <ArrowLeft size={24} color="#94a3b8" />
+            <ArrowLeft size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
       </View>
       {rightContent && <View style={styles.rightSection}>{rightContent}</View>}
     </View>
@@ -55,7 +57,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
   },
   rightSection: {
     flexDirection: 'row',

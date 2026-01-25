@@ -1,10 +1,11 @@
 import React from 'react';
-import { NavigationContainer, DarkTheme, Theme } from '@react-navigation/native';
+import { NavigationContainer, Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LoginScreen } from '../pages/LoginScreen';
 import { CreatePostScreen } from '../pages/CreatePostScreen';
 import { SettingsScreen } from '../pages/SettingsScreen';
 import { MainTabs } from './MainTabs';
+import { useTheme } from '../state/theme/ThemeContext';
 
 export type RootStackParamList = {
   MainTabs: undefined;
@@ -15,21 +16,48 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// 自定义导航主题，避免默认白色背景导致边缘露白
-const navTheme: Theme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    background: '#020617', // 深色背景
-    card: 'rgba(2, 6, 23, 0.92)',
-    border: 'rgba(148, 163, 184, 0.16)',
-  },
-};
-
 export const AppNavigator: React.FC = () => {
+  const { colors, resolvedMode } = useTheme();
+
+  // 根据主题动态生成导航主题
+  const navTheme: Theme = {
+    dark: resolvedMode === 'dark',
+    colors: {
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.card,
+      text: colors.textPrimary,
+      border: colors.surfaceBorder,
+      notification: colors.error,
+    },
+    fonts: {
+      regular: {
+        fontFamily: 'System',
+        fontWeight: '400' as const,
+      },
+      medium: {
+        fontFamily: 'System',
+        fontWeight: '500' as const,
+      },
+      bold: {
+        fontFamily: 'System',
+        fontWeight: '700' as const,
+      },
+      heavy: {
+        fontFamily: 'System',
+        fontWeight: '800' as const,
+      },
+    },
+  };
+
   return (
     <NavigationContainer theme={navTheme}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: navTheme.colors.background },
+        }}
+      >
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="Login" component={LoginScreenWrapper} />
         <Stack.Screen name="CreatePost" component={CreatePostScreenWrapper} />

@@ -8,6 +8,7 @@ import { CodeModeSelector } from '../components/CodeModeSelector';
 import { ProgressBar } from '../components/ProgressBar';
 import { PlayerControls } from '../components/PlayerControls';
 import { ModeBackground } from '../components/ModeBackground';
+import { useTheme } from '../state/theme/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface PlayerScreenProps {
@@ -57,6 +58,7 @@ const formatCreateTime = (createTime: string): string => {
 
 export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPress }) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -164,16 +166,24 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPr
   // 未选择作品时的占位视图
   if (!article) {
     return (
-      <View style={[styles.container, { backgroundColor: '#020617' }]}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ModeBackground active={false} sceneMode={sceneMode} />
         <View style={styles.emptyState}>
-          <View style={styles.emptyIcon}>
-            <Volume2 size={24} color="#818cf8" />
+          <View style={[styles.emptyIcon, { backgroundColor: `${colors.primary}20` }]}>
+            <Volume2 size={24} color={colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>还没有选择作品</Text>
-          <Text style={styles.emptySubtitle}>前往知识库选择一篇作品开始播放</Text>
-          <TouchableOpacity style={styles.emptyButton} onPress={onLibraryPress} activeOpacity={0.85}>
-            <Text style={styles.emptyButtonText}>去选择作品</Text>
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+            还没有选择作品
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            前往知识库选择一篇作品开始播放
+          </Text>
+          <TouchableOpacity
+            style={[styles.emptyButton, { backgroundColor: colors.accent }]}
+            onPress={onLibraryPress}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.emptyButtonText, { color: colors.text }]}>去选择作品</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -188,16 +198,24 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPr
   const buttonSize = sceneMode === 'driving' ? 'large' : 'standard';
 
   return (
-    // <View style={[styles.container, getSceneStyles()]}>
-    <View style={[styles.container]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ModeBackground active={isPlaying} sceneMode={sceneMode} />
       {/* Top Bar */}
-      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 0) }]}>
+      <View
+        style={[
+          styles.topBar,
+          {
+            paddingTop: Math.max(insets.top, 0),
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.surfaceBorder,
+          },
+        ]}
+      >
         <View style={styles.logoContainer}>
-          <View style={styles.logo}>
-            <Volume2 size={16} color="#ffffff" />
+          <View style={[styles.logo, { backgroundColor: colors.accent }]}>
+            <Volume2 size={16} color={colors.text} />
           </View>
-          <Text style={styles.logoText}>CodeWave</Text>
+          <Text style={[styles.logoText, { color: colors.textPrimary }]}>CodeWave</Text>
         </View>
         <SceneSelector sceneMode={sceneMode} onModeChange={setSceneMode} />
       </View>
@@ -210,17 +228,18 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPr
       >
         {/* Article Info */}
         <View style={styles.articleInfo}>
-          <Text style={styles.category}>{article.category}</Text>
+          <Text style={[styles.category, { color: colors.primary }]}>{article.category}</Text>
           <Text
             style={[
               styles.title,
+              { color: colors.textPrimary },
               sceneMode === 'driving' && styles.titleLarge,
             ]}
           >
             {article.title}
           </Text>
-          <Text style={styles.meta}>
-              {article.createTime ? formatCreateTime(article.createTime) : ''}
+          <Text style={[styles.meta, { color: colors.textSecondary }]}>
+            {article.createTime ? formatCreateTime(article.createTime) : ''}
           </Text>
         </View>
 
@@ -258,16 +277,14 @@ export const PlayerScreen: React.FC<PlayerScreenProps> = ({ article, onLibraryPr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617', // 避免露出白底
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12, 
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   logoContainer: {
     flexDirection: 'row',
@@ -277,7 +294,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 32,
     height: 32,
-    backgroundColor: '#4f46e5',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -285,7 +301,6 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
     letterSpacing: -0.5,
   },
   scrollView: {
@@ -304,7 +319,6 @@ const styles = StyleSheet.create({
   category: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#818cf8',
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 8,
@@ -312,7 +326,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#ffffff',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 32,
@@ -322,7 +335,6 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontSize: 14,
-    color: '#94a3b8',
   },
   contentArea: {
     flex: 1,
@@ -337,7 +349,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 24,
-    backgroundColor: 'transparent',  
+    backgroundColor: 'transparent',
   },
   emptyState: {
     flex: 1,
@@ -350,17 +362,14 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyTitle: {
-    color: '#e2e8f0',
     fontSize: 18,
     fontWeight: '600',
   },
   emptySubtitle: {
-    color: '#94a3b8',
     fontSize: 14,
     textAlign: 'center',
   },
@@ -369,10 +378,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#4f46e5',
   },
   emptyButtonText: {
-    color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
   },

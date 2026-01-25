@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator 
 import { ArrowLeft, LogIn } from 'lucide-react-native';
 import { ApiError } from '../api/client';
 import { useAuth } from '../state/auth/AuthContext';
+import { useTheme } from '../state/theme/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface LoginScreenProps {
@@ -11,6 +12,7 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onBack }) => {
   const { login } = useAuth();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -40,54 +42,95 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onBack }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 0) }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <ArrowLeft size={24} color="#94a3b8" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View
+        style={[
+          styles.header,
+          {
+            paddingTop: Math.max(insets.top, 0),
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.surfaceBorder,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={onBack}
+          style={styles.backBtn}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <ArrowLeft size={24} color={colors.textSecondary} />
         </TouchableOpacity>
-        <Text style={styles.title}>登录</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>登录</Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>用户名</Text>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.surfaceBorder,
+          },
+        ]}
+      >
+        <Text style={[styles.label, { color: colors.textSecondary }]}>用户名</Text>
         <TextInput
           value={username}
           onChangeText={setUsername}
           placeholder="请输入用户名"
-          placeholderTextColor="#64748b"
-          style={styles.input}
+          placeholderTextColor={colors.textTertiary}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.background,
+              borderColor: colors.surfaceBorder,
+              color: colors.textPrimary,
+            },
+          ]}
           autoCapitalize="none"
         />
 
-        <Text style={[styles.label, { marginTop: 12 }]}>密码</Text>
+        <Text style={[styles.label, { marginTop: 12, color: colors.textSecondary }]}>密码</Text>
         <TextInput
           value={password}
           onChangeText={setPassword}
           placeholder="请输入密码"
-          placeholderTextColor="#64748b"
-          style={styles.input}
+          placeholderTextColor={colors.textTertiary}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.background,
+              borderColor: colors.surfaceBorder,
+              color: colors.textPrimary,
+            },
+          ]}
           secureTextEntry
         />
 
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        {error && <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>}
 
         <TouchableOpacity
-          style={[styles.submitBtn, (!canSubmit || submitting) && styles.submitBtnDisabled]}
+          style={[
+            styles.submitBtn,
+            {
+              backgroundColor: colors.text,
+            },
+            (!canSubmit || submitting) && styles.submitBtnDisabled,
+          ]}
           onPress={handleSubmit}
           activeOpacity={0.85}
           disabled={!canSubmit || submitting}
         >
           {submitting ? (
-            <ActivityIndicator color="#0f172a" />
+            <ActivityIndicator color={colors.background} />
           ) : (
             <>
-              <LogIn size={18} color="#0f172a" />
-              <Text style={styles.submitText}>登录</Text>
+              <LogIn size={18} color={colors.background} />
+              <Text style={[styles.submitText, { color: colors.background }]}>登录</Text>
             </>
           )}
         </TouchableOpacity>
 
-        <Text style={styles.tip}>
+        <Text style={[styles.tip, { color: colors.textTertiary }]}>
           提示：接口基础地址为 localhost:5090（真机/模拟器可能需要改为局域网 IP 或 10.0.2.2）。
         </Text>
       </View>
@@ -104,6 +147,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    borderBottomWidth: 1,
   },
   backBtn: {
     marginRight: 12,
@@ -112,18 +156,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
   },
   card: {
     margin: 16,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
     borderWidth: 1,
-    borderColor: '#1e293b',
   },
   label: {
-    color: '#94a3b8',
     fontSize: 12,
     marginBottom: 8,
   },
@@ -131,21 +171,16 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 10,
     paddingHorizontal: 12,
-    backgroundColor: '#0b1220',
     borderWidth: 1,
-    borderColor: '#334155',
-    color: '#e2e8f0',
   },
   errorText: {
     marginTop: 12,
-    color: '#f87171',
     fontSize: 12,
   },
   submitBtn: {
     marginTop: 16,
     height: 44,
     borderRadius: 10,
-    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -155,13 +190,11 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitText: {
-    color: '#0f172a',
     fontSize: 16,
     fontWeight: '700',
   },
   tip: {
     marginTop: 12,
-    color: '#64748b',
     fontSize: 12,
     lineHeight: 18,
   },

@@ -10,6 +10,7 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../state/theme/ThemeContext';
 
 interface ProfileScreenProps {
   isLoggedIn: boolean;
@@ -29,42 +30,43 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onSettingsPress,
 }) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const menuItems = [
     {
       id: 'settings',
       icon: Settings,
       title: '设置',
-      color: '#818cf8',
+      color: colors.primary,
     },
     {
       id: 'notifications',
       icon: Bell,
       title: '通知',
-      color: '#f59e0b',
+      color: colors.warning,
     },
     {
       id: 'favorites',
       icon: Heart,
       title: '收藏',
-      color: '#ef4444',
+      color: colors.error,
     },
     {
       id: 'history',
       icon: History,
       title: '播放历史',
-      color: '#10b981',
+      color: colors.success,
     },
     {
       id: 'help',
       icon: HelpCircle,
       title: '帮助与反馈',
-      color: '#3b82f6',
+      color: colors.info,
     },
     {
       id: 'logout',
       icon: LogOut,
       title: '退出登录',
-      color: '#94a3b8',
+      color: colors.textSecondary,
     },
   ];
 
@@ -74,10 +76,15 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   }, [isLoggedIn, username]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 0) }]}>
-        <Text style={styles.headerTitle}>我的</Text>
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Math.max(insets.top, 0), backgroundColor: colors.surface },
+        ]}
+      >
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>我的</Text>
       </View>
 
       <ScrollView
@@ -93,19 +100,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             if (!isLoggedIn) onLoginPress();
           }}
         >
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
+          <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
+            <Text style={[styles.avatarText, { color: colors.text }]}>
               {(displayName.trim()[0] || 'U').toUpperCase()}
             </Text>
           </View>
           <View style={styles.userRow}>
             <View style={styles.userCol}>
-              <Text style={styles.userName}>{displayName}</Text>
-              <Text style={styles.userEmail}>
+              <Text style={[styles.userName, { color: colors.textPrimary }]}>{displayName}</Text>
+              <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
                 {isLoggedIn ? email || '—' : '登录后同步你的收藏与历史'}
               </Text>
             </View>
-            {!isLoggedIn && <ChevronRight size={18} color="#64748b" />}
+            {!isLoggedIn && <ChevronRight size={18} color={colors.textTertiary} />}
           </View>
         </TouchableOpacity>
 
@@ -118,7 +125,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             return (
               <TouchableOpacity
                 key={item.id}
-                style={[styles.menuItem, isLogout && !isLoggedIn && styles.menuItemDisabled]}
+                style={[
+                  styles.menuItem,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.surfaceBorder,
+                  },
+                  isLogout && !isLoggedIn && styles.menuItemDisabled,
+                ]}
                 activeOpacity={0.7}
                 disabled={isLogout && !isLoggedIn}
                 onPress={() => {
@@ -132,8 +146,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 <View style={[styles.menuIcon, { backgroundColor: `${item.color}20` }]}>
                   <Icon size={20} color={item.color} />
                 </View>
-                <Text style={styles.menuText}>{item.title}</Text>
-                {isSettings && <ChevronRight size={18} color="#64748b" style={styles.chevron} />}
+                <Text style={[styles.menuText, { color: colors.textPrimary }]}>{item.title}</Text>
+                {isSettings && (
+                  <ChevronRight size={18} color={colors.textTertiary} style={styles.chevron} />
+                )}
               </TouchableOpacity>
             );
           })}
@@ -141,7 +157,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
         {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={styles.appInfoText}>CodeWave v1.0.0</Text>
+          <Text style={[styles.appInfoText, { color: colors.textTertiary }]}>
+            CodeWave v1.0.0
+          </Text>
         </View>
       </ScrollView>
     </View>
@@ -155,11 +173,11 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    borderBottomWidth: 1,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
   },
   scrollView: {
     flex: 1,
@@ -187,7 +205,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#4f46e5',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -195,31 +212,26 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#ffffff',
   },
   userName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#94a3b8',
   },
   menuSection: {
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: 'rgba(48, 45, 70, 0.3)',
     borderRadius: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#1e293b',
     justifyContent: 'space-between',
   },
   menuItemDisabled: {
@@ -235,7 +247,6 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontSize: 16,
-    color: '#e2e8f0',
     fontWeight: '500',
     flex: 1,
   },
@@ -249,7 +260,6 @@ const styles = StyleSheet.create({
   },
   appInfoText: {
     fontSize: 12,
-    color: '#64748b',
   },
 });
 
