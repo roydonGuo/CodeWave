@@ -3,12 +3,14 @@ import { NavigationContainer, DarkTheme, Theme } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LoginScreen } from '../pages/LoginScreen';
 import { CreatePostScreen } from '../pages/CreatePostScreen';
+import { SettingsScreen } from '../pages/SettingsScreen';
 import { MainTabs } from './MainTabs';
 
 export type RootStackParamList = {
   MainTabs: undefined;
   Login: undefined;
   CreatePost: undefined;
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -31,6 +33,7 @@ export const AppNavigator: React.FC = () => {
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="Login" component={LoginScreenWrapper} />
         <Stack.Screen name="CreatePost" component={CreatePostScreenWrapper} />
+        <Stack.Screen name="Settings" component={SettingsScreenWrapper} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -50,6 +53,12 @@ type CreatePostProps = NativeStackScreenProps<RootStackParamList, 'CreatePost'>;
 
 const CreatePostScreenWrapper: React.FC<CreatePostProps> = ({ navigation }) => {
   return <CreatePostScreen onBack={() => navigation.goBack()} />;
+};
+
+type SettingsProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;
+
+const SettingsScreenWrapper: React.FC<SettingsProps> = ({ navigation }) => {
+  return <SettingsScreen onBack={() => navigation.goBack()} />;
 };
 
 

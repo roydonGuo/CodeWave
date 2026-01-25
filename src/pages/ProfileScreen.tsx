@@ -17,6 +17,7 @@ interface ProfileScreenProps {
   email?: string | null;
   onLoginPress: () => void;
   onLogoutPress: () => void;
+  onSettingsPress?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -25,6 +26,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   email,
   onLoginPress,
   onLogoutPress,
+  onSettingsPress,
 }) => {
   const insets = useSafeAreaInsets();
   const menuItems = [
@@ -112,6 +114,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isLogout = item.id === 'logout';
+            const isSettings = item.id === 'settings';
             return (
               <TouchableOpacity
                 key={item.id}
@@ -119,13 +122,18 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 activeOpacity={0.7}
                 disabled={isLogout && !isLoggedIn}
                 onPress={() => {
-                  if (isLogout) onLogoutPress();
+                  if (isLogout) {
+                    onLogoutPress();
+                  } else if (isSettings && onSettingsPress) {
+                    onSettingsPress();
+                  }
                 }}
               >
                 <View style={[styles.menuIcon, { backgroundColor: `${item.color}20` }]}>
                   <Icon size={20} color={item.color} />
                 </View>
                 <Text style={styles.menuText}>{item.title}</Text>
+                {isSettings && <ChevronRight size={18} color="#64748b" style={styles.chevron} />}
               </TouchableOpacity>
             );
           })}
@@ -212,6 +220,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#1e293b',
+    justifyContent: 'space-between',
   },
   menuItemDisabled: {
     opacity: 0.45,
@@ -228,6 +237,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#e2e8f0',
     fontWeight: '500',
+    flex: 1,
+  },
+  chevron: {
+    marginLeft: 8,
   },
   appInfo: {
     alignItems: 'center',

@@ -54,6 +54,7 @@ export const MainTabs: React.FC<Props> = ({ navigation }) => {
               email={auth.user?.email ?? null}
               onLoginPress={() => navigation.navigate('Login')}
               onLogoutPress={() => auth.logout()}
+              onSettingsPress={() => navigation.navigate('Settings')}
             />
           );
         case 'player':
