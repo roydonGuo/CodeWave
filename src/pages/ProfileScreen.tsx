@@ -11,6 +11,7 @@ import {
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../state/theme/ThemeContext';
+import { Header } from '../components/Header';
 
 interface ProfileScreenProps {
   isLoggedIn: boolean;
@@ -78,14 +79,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View
-        style={[
-          styles.header,
-          { paddingTop: Math.max(insets.top, 0), backgroundColor: colors.surface },
-        ]}
-      >
-        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>我的</Text>
-      </View>
+      <Header title="我的" />
 
       <ScrollView
         style={styles.scrollView}

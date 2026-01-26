@@ -24,7 +24,7 @@ export const AppBackground: React.FC = () => {
             <Stop offset="20%" stopColor="rgb(7, 1, 41)" stopOpacity="1" />
             <Stop offset="40%" stopColor="rgb(16, 5, 75)" stopOpacity="1" />
             <Stop offset="60%" stopColor="rgb(15, 4, 71)" stopOpacity="1" />
-            <Stop offset="80%" stopColor="rgb(5, 0, 31)" stopOpacity="1" />
+            <Stop offset="77%" stopColor="rgb(5, 0, 31)" stopOpacity="1" />
             <Stop offset="100%" stopColor="rgb(0, 0, 0)" stopOpacity="1" />
           </RadialGradient>
         </Defs>

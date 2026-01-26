@@ -19,7 +19,7 @@ export const CreatePostScreen: React.FC<CreatePostScreenProps> = ({ onBack }) =>
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
+    flex: 1,
   },
   content: {
     flex: 1,
